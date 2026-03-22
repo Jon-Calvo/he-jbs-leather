@@ -3,7 +3,7 @@
 // ============================================================
 
 // ⚠️ IMPORTANTE: Reemplazar con la URL de tu implementación de Apps Script
-const API_URL = 'https://script.google.com/macros/s/AKfycbwb0IXaFASBPKaks7L9Q5mKz8c1oUFHJOLBCbjyAktISF3i5QxAr8_g3YhQdxqowbu6XA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycby33qj7KwkRtxrxtOsvqaQ7hDsY7V04VtnUwoPM9-UghuNyT88AJEn7vy2AIbRqK8qbIw/exec';
 
 // ——— SESIÓN ——————————————————————————————————————————————————
 const Sesion = {
