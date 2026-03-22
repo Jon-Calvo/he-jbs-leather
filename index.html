@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f1923">
+  <meta name="description" content="Sistema de Autorización de Horas Extras - JBS Leather">
+  <title>HE · JBS Leather</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-bg">
+    <div class="login-grid"></div>
+  </div>
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-icon">⊕</div>
+      <div>
+        <div class="brand-title">HORAS EXTRAS</div>
+        <div class="brand-sub">JBS LEATHER · 2026</div>
+      </div>
+    </div>
+    <form id="form-login" autocomplete="off">
+      <div class="field-group">
+        <label class="field-label">CÓDIGO DE USUARIO</label>
+        <input id="inp-usuario" class="field-input mono" type="text" placeholder="ej: JONCAL" autocomplete="username" maxlength="10">
+      </div>
+      <div class="field-group">
+        <label class="field-label">CONTRASEÑA</label>
+        <div class="field-pass-wrap">
+          <input id="inp-pass" class="field-input mono" type="password" placeholder="••••••" autocomplete="current-password">
+          <button type="button" class="btn-toggle-pass" id="btn-toggle-pass">👁</button>
+        </div>
+      </div>
+      <div id="login-error" class="error-msg hidden"></div>
+      <button type="submit" class="btn-primary btn-login" id="btn-login">
+        <span id="btn-login-text">INGRESAR</span>
+        <span id="btn-login-spinner" class="spinner hidden"></span>
+      </button>
+    </form>
+    <div class="login-footer">Sistema de Autorización de Horas Extras v2.0</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════════════════════════ -->
+<div id="screen-app" class="screen hidden">
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">⊕ HE</div>
+      <button id="btn-close-sidebar" class="btn-icon-sm sidebar-close">✕</button>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="nav-avatar">JC</div>
+      <div>
+        <div class="user-name" id="nav-nombre">Cargando...</div>
+        <div class="user-area" id="nav-area">—</div>
+      </div>
+    </div>
+    <ul class="nav-list">
+      <li><a class="nav-link active" data-view="dashboard" href="#">
+        <span class="nav-icon">◈</span> Dashboard
+      </a></li>
+      <li><a class="nav-link" data-view="solicitudes" href="#">
+        <span class="nav-icon">◉</span> Mis Solicitudes
+      </a></li>
+      <li><a class="nav-link" data-view="nueva" href="#">
+        <span class="nav-icon">⊞</span> Nueva Solicitud
+      </a></li>
+      <li id="nav-aprobacion" class="hidden"><a class="nav-link" data-view="aprobacion" href="#">
+        <span class="nav-icon">◈</span> Aprobación
+        <span id="badge-pendientes" class="nav-badge hidden">0</span>
+      </a></li>
+      <li id="nav-admin" class="hidden"><a class="nav-link" data-view="admin" href="#">
+        <span class="nav-icon">⊛</span> Administración
+      </a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button id="btn-logout" class="btn-logout">⎋ Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <!-- OVERLAY SIDEBAR MOBILE -->
+  <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button id="btn-open-sidebar" class="btn-icon topbar-menu">☰</button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions">
+        <button id="topbar-refresh" class="btn-icon" title="Actualizar">↻</button>
+      </div>
+    </header>
+
+    <!-- ——— VIEW: DASHBOARD ——— -->
+    <div id="view-dashboard" class="view active">
+      <div class="view-header">
+        <h1 class="view-title">Dashboard</h1>
+        <p class="view-sub" id="dash-bienvenida">Bienvenido</p>
+      </div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card stat-pendientes">
+          <div class="stat-icon">◎</div>
+          <div class="stat-val" id="stat-pendientes">—</div>
+          <div class="stat-label">Pendientes</div>
+        </div>
+        <div class="stat-card stat-aprobadas">
+          <div class="stat-icon">✓</div>
+          <div class="stat-val" id="stat-aprobadas">—</div>
+          <div class="stat-label">Aprobadas</div>
+        </div>
+        <div class="stat-card stat-rechazadas">
+          <div class="stat-icon">✗</div>
+          <div class="stat-val" id="stat-rechazadas">—</div>
+          <div class="stat-label">Rechazadas</div>
+        </div>
+        <div class="stat-card stat-horas">
+          <div class="stat-icon">⏱</div>
+          <div class="stat-val" id="stat-horas">—</div>
+          <div class="stat-label">Total Horas</div>
+        </div>
+      </div>
+      <div class="dash-sectores">
+        <h2 class="section-title">Solicitudes por Sector</h2>
+        <div id="chart-sectores" class="chart-sectores"></div>
+      </div>
+    </div>
+
+    <!-- ——— VIEW: SOLICITUDES ——— -->
+    <div id="view-solicitudes" class="view hidden">
+      <div class="view-header">
+        <h1 class="view-title">Solicitudes</h1>
+        <button class="btn-primary btn-sm" id="btn-ir-nueva">+ Nueva</button>
+      </div>
+      <div class="filters-bar">
+        <input id="filter-nro" class="field-input-sm mono" type="text" placeholder="N° Solicitud">
+        <select id="filter-status" class="field-select-sm">
+          <option value="">Todos los estados</option>
+          <option value="PENDIENTE APROBACION">Pendiente</option>
+          <option value="APROBADA">Aprobada</option>
+          <option value="RECHAZADA">Rechazada</option>
+          <option value="CANCELADA">Cancelada</option>
+        </select>
+        <input id="filter-desde" class="field-input-sm" type="date" title="Desde">
+        <button id="btn-filtrar" class="btn-secondary btn-sm">Filtrar</button>
+        <button id="btn-exportar" class="btn-secondary btn-sm">↓ CSV</button>
+      </div>
+      <div id="tabla-solicitudes-wrap" class="tabla-wrap">
+        <div class="loading-state" id="sol-loading">
+          <div class="spinner-lg"></div>
+          <p>Cargando solicitudes...</p>
+        </div>
+        <div id="sol-empty" class="empty-state hidden">
+          <div class="empty-icon">◎</div>
+          <p>No hay solicitudes para mostrar</p>
+        </div>
+        <div id="lista-solicitudes" class="solicitudes-lista hidden"></div>
+      </div>
+    </div>
+
+    <!-- ——— VIEW: NUEVA SOLICITUD ——— -->
+    <div id="view-nueva" class="view hidden">
+      <div class="view-header">
+        <h1 class="view-title">Nueva Solicitud</h1>
+        <div class="nro-solicitud-badge">N° <span id="preview-nro">—</span></div>
+      </div>
+      <div class="form-wizard">
+        <!-- PASO 1: DATOS GENERALES -->
+        <div class="wizard-step active" id="step-1">
+          <div class="step-header">
+            <div class="step-num">01</div>
+            <div class="step-title">Datos Generales</div>
+          </div>
+          <div class="form-grid-2">
+            <div class="field-group">
+              <label class="field-label">RESPONSABLE SOLICITANTE *</label>
+              <input id="f-responsable" class="field-input" type="text" list="list-responsables" placeholder="Buscar responsable...">
+              <datalist id="list-responsables"></datalist>
+            </div>
+            <div class="field-group">
+              <label class="field-label">FECHA DE REALIZACIÓN *</label>
+              <input id="f-fecha" class="field-input" type="date">
+            </div>
+            <div class="field-group">
+              <label class="field-label">MOTIVO *</label>
+              <select id="f-motivo" class="field-select">
+                <option value="">Seleccionar motivo...</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">SECTOR / PROCESO *</label>
+              <select id="f-sector" class="field-select">
+                <option value="">Seleccionar sector...</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">HORA INICIO *</label>
+              <input id="f-hora-inicio" class="field-input mono" type="text" placeholder="HH:MM" maxlength="5">
+            </div>
+            <div class="field-group">
+              <label class="field-label">HORA FIN *</label>
+              <input id="f-hora-fin" class="field-input mono" type="text" placeholder="HH:MM" maxlength="5">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">TOTAL DE HORAS</label>
+            <div class="total-horas-display" id="total-horas-display">
+              <span id="total-horas-val">0:00 hs</span>
+              <span id="total-horas-alert" class="horas-alert hidden">⚠ Supera 12 horas</span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">OBSERVACIÓN</label>
+            <textarea id="f-obs" class="field-textarea" rows="2" placeholder="Información adicional..."></textarea>
+          </div>
+          <div class="wizard-nav">
+            <div></div>
+            <button class="btn-primary" id="btn-step1-next">Siguiente → Equipo</button>
+          </div>
+        </div>
+
+        <!-- PASO 2: EQUIPO DE EXTRA -->
+        <div class="wizard-step hidden" id="step-2">
+          <div class="step-header">
+            <div class="step-num">02</div>
+            <div class="step-title">Equipo de Extra</div>
+          </div>
+          <div class="equipo-layout">
+            <div class="equipo-busqueda">
+              <div class="field-group">
+                <label class="field-label">BUSCAR COLABORADOR</label>
+                <div class="search-wrap">
+                  <input id="search-colab" class="field-input" type="text" placeholder="Nombre o legajo...">
+                  <div class="search-spinner hidden" id="search-spinner">↻</div>
+                </div>
+              </div>
+              <div id="lista-colab-disponibles" class="colab-lista"></div>
+            </div>
+            <div class="equipo-seleccionado">
+              <div class="equipo-header">
+                <span class="field-label">EQUIPO SELECCIONADO</span>
+                <span id="count-equipo" class="equipo-count">0 personas</span>
+              </div>
+              <div id="lista-colab-equipo" class="colab-lista colab-equipo">
+                <div class="empty-equipo">
+                  <p>Agregue colaboradores desde la búsqueda</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="wizard-nav">
+            <button class="btn-secondary" id="btn-step2-back">← Volver</button>
+            <button class="btn-primary" id="btn-step2-next">Siguiente → Confirmar</button>
+          </div>
+        </div>
+
+        <!-- PASO 3: CONFIRMACIÓN -->
+        <div class="wizard-step hidden" id="step-3">
+          <div class="step-header">
+            <div class="step-num">03</div>
+            <div class="step-title">Confirmar Solicitud</div>
+          </div>
+          <div id="resumen-solicitud" class="resumen-card"></div>
+          <div id="confirm-error" class="error-msg hidden"></div>
+          <div class="wizard-nav">
+            <button class="btn-secondary" id="btn-step3-back">← Volver</button>
+            <button class="btn-primary btn-enviar" id="btn-enviar">
+              <span id="btn-enviar-text">✓ Enviar Solicitud</span>
+              <span id="btn-enviar-spinner" class="spinner hidden"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ÉXITO -->
+        <div class="wizard-step hidden" id="step-success">
+          <div class="success-card">
+            <div class="success-icon">✓</div>
+            <h2>¡Solicitud enviada!</h2>
+            <p>La solicitud N° <strong id="success-nro">—</strong> fue registrada exitosamente.</p>
+            <p class="success-sub">Estado: <span class="badge badge-pending">PENDIENTE APROBACION</span></p>
+            <div class="success-actions">
+              <button class="btn-secondary" id="btn-ver-solicitud">Ver mis solicitudes</button>
+              <button class="btn-primary" id="btn-nueva-otra">+ Nueva solicitud</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ——— VIEW: APROBACIÓN ——— -->
+    <div id="view-aprobacion" class="view hidden">
+      <div class="view-header">
+        <h1 class="view-title">Aprobación de Solicitudes</h1>
+      </div>
+      <div class="filters-bar">
+        <select id="filter-apro-status" class="field-select-sm">
+          <option value="PENDIENTE APROBACION">Pendientes</option>
+          <option value="">Todas</option>
+          <option value="APROBADA">Aprobadas</option>
+          <option value="RECHAZADA">Rechazadas</option>
+        </select>
+        <input id="filter-apro-desde" class="field-input-sm" type="date">
+        <button id="btn-filtrar-apro" class="btn-secondary btn-sm">Filtrar</button>
+      </div>
+      <div id="lista-aprobacion" class="solicitudes-lista">
+        <div class="loading-state">
+          <div class="spinner-lg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ——— VIEW: ADMIN ——— -->
+    <div id="view-admin" class="view hidden">
+      <div class="view-header">
+        <h1 class="view-title">Administración</h1>
+      </div>
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="usuarios">Usuarios</button>
+        <button class="admin-tab" data-tab="logs">Logs de Auditoría</button>
+        <button class="admin-tab" data-tab="tarifas">Tarifas HE</button>
+      </div>
+
+      <!-- Tab: Usuarios -->
+      <div id="admin-tab-usuarios" class="admin-tab-content active">
+        <div class="admin-bar">
+          <input id="search-usuario" class="field-input-sm" type="text" placeholder="Buscar usuario...">
+          <button id="btn-nuevo-usuario" class="btn-primary btn-sm">+ Nuevo Usuario</button>
+        </div>
+        <div id="tabla-usuarios" class="tabla-wrap"></div>
+      </div>
+
+      <!-- Tab: Logs -->
+      <div id="admin-tab-logs" class="admin-tab-content hidden">
+        <div id="tabla-logs" class="tabla-wrap mono" style="font-size:0.8rem;"></div>
+      </div>
+
+      <!-- Tab: Tarifas -->
+      <div id="admin-tab-tarifas" class="admin-tab-content hidden">
+        <div id="tabla-tarifas" class="tabla-wrap"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL SOLICITUD DETAIL
+══════════════════════════════════════════════════════════════ -->
+<div id="modal-overlay" class="modal-overlay hidden" role="dialog">
+  <div id="modal-box" class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">Detalle Solicitud</h3>
+      <button id="modal-close" class="btn-icon">✕</button>
+    </div>
+    <div id="modal-content" class="modal-content"></div>
+    <div id="modal-actions" class="modal-actions hidden">
+      <button id="modal-btn-aprobar" class="btn-success">✓ Aprobar</button>
+      <button id="modal-btn-rechazar" class="btn-danger">✗ Rechazar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL USUARIO -->
+<div id="modal-usuario-overlay" class="modal-overlay hidden" role="dialog">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-usuario-title">Nuevo Usuario</h3>
+      <button id="modal-usuario-close" class="btn-icon">✕</button>
+    </div>
+    <div class="modal-content">
+      <div class="form-grid-2">
+        <div class="field-group">
+          <label class="field-label">NOMBRE COMPLETO</label>
+          <input id="u-nombre" class="field-input" type="text">
+        </div>
+        <div class="field-group">
+          <label class="field-label">ÁREA</label>
+          <input id="u-area" class="field-input" type="text">
+        </div>
+        <div class="field-group">
+          <label class="field-label">CÓDIGO DE USUARIO</label>
+          <input id="u-usuario" class="field-input mono" type="text" maxlength="10">
+        </div>
+        <div class="field-group">
+          <label class="field-label">CONTRASEÑA</label>
+          <input id="u-pass" class="field-input mono" type="text" placeholder="mín. 4 caracteres">
+        </div>
+        <div class="field-group">
+          <label class="field-label">NIVEL DE ACCESO</label>
+          <select id="u-hoja" class="field-select">
+            <option value="Menu">Usuario (Menu)</option>
+            <option value="TODAS">Administrador (TODAS)</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">EMAIL</label>
+          <input id="u-mail" class="field-input" type="email">
+        </div>
+      </div>
+      <div id="modal-usuario-error" class="error-msg hidden"></div>
+    </div>
+    <div class="modal-actions">
+      <button id="modal-usuario-cancel" class="btn-secondary">Cancelar</button>
+      <button id="modal-usuario-save" class="btn-primary">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATIONS -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- SCRIPTS -->
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('SW registrado'))
+      .catch(err => console.warn('SW error:', err));
+  }
+</script>
+</body>
+</html>

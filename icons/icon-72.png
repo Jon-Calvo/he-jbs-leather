@@ -1,0 +1,5 @@
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+  <rect width="72" height="72" fill="#0f1923"/>
+  <rect x="5" y="5" width="62" height="62" fill="none" stroke="#f5c542" stroke-width="2"/>
+  <text x="36" y="38" font-family="monospace" font-weight="700" font-size="20" fill="#f5c542" text-anchor="middle" dominant-baseline="central">HE</text>
+</svg>
