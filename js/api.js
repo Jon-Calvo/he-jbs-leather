@@ -34,40 +34,58 @@ const Sesion = {
 };
 
 // ——— HTTP ————————————————————————————————————————————————————
-async function apiCall(action, params = {}) {
-  const body = { action, ...params };
-  if (Sesion.token) body.token = Sesion.token;
+function apiCall(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const body = { action, ...params };
+    if (Sesion.token) body.token = Sesion.token;
 
-  try {
-    const url = new URL(API_URL);
-    url.searchParams.set('payload', JSON.stringify(body));
+    // Nombre único para el callback
+    const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
 
-    const res = await fetch(url.toString(), {
-      method: 'GET',
-      redirect: 'follow'
-    });
+    // Timeout de 15 segundos
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Timeout: el servidor no respondió'));
+    }, 15000);
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const data = await res.json();
-
-    if (!data.ok && data.error && data.error.includes('Sesión inválida')) {
-      Sesion.limpiar();
-      mostrarPantalla('login');
-      mostrarToast('Tu sesión expiró. Por favor ingresá de nuevo.', 'error');
-      return null;
+    // Limpiar después de la respuesta
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      const script = document.getElementById(cbName);
+      if (script) script.remove();
     }
 
-    return data;
-  } catch (err) {
-    console.error('API Error:', err);
-    const cache = localStorage.getItem(`cache_${action}`);
-    if (cache) {
-      console.warn('Usando datos cacheados para:', action);
-      return JSON.parse(cache);
-    }
-    throw err;
-  }
+    // Definir el callback global
+    window[cbName] = function(data) {
+      cleanup();
+      if (!data.ok && data.error && data.error.includes('Sesión inválida')) {
+        Sesion.limpiar();
+        mostrarPantalla('login');
+        mostrarToast('Tu sesión expiró. Por favor ingresá de nuevo.', 'error');
+        resolve(null);
+        return;
+      }
+      resolve(data);
+    };
+
+    // Construir URL con callback
+    const url = API_URL
+      + '?callback=' + cbName
+      + '&payload=' + encodeURIComponent(JSON.stringify(body));
+
+    // Crear tag <script>
+    const script = document.createElement('script');
+    script.id = cbName;
+    script.src = url;
+    script.onerror = () => {
+      cleanup();
+      const cache = localStorage.getItem('cache_' + action);
+      if (cache) resolve(JSON.parse(cache));
+      else reject(new Error('Error de red'));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 // ——— MÉTODOS DE API ——————————————————————————————————————————
