@@ -39,10 +39,11 @@ async function apiCall(action, params = {}) {
   if (Sesion.token) body.token = Sesion.token;
 
   try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+    const url = new URL(API_URL);
+    url.searchParams.set('payload', JSON.stringify(body));
+
+    const res = await fetch(url.toString(), {
+      method: 'GET',
       redirect: 'follow'
     });
 
@@ -60,7 +61,6 @@ async function apiCall(action, params = {}) {
     return data;
   } catch (err) {
     console.error('API Error:', err);
-    // Modo offline: devolver datos del cache si existen
     const cache = localStorage.getItem(`cache_${action}`);
     if (cache) {
       console.warn('Usando datos cacheados para:', action);
